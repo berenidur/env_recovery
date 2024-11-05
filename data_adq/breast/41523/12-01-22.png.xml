@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<object xmlns="">
+	<ID>12-01-22.png</ID>
+	<application>L14-5/38-BI-[MAMA#1]</application>
+	<time day="20" hour="12" minute="1" month="12" second="22" year="2016"/>
+	<examtype>Breast Imaging</examtype>
+	<noclipping>0</noclipping>
+	<imagecount>1</imagecount>
+	<regions offset="0">
+		<region flag="0" mode="0" name="B">
+			<type>0</type>
+			<xpos>40</xpos>
+			<ypos>65</ypos>
+			<width>820</width>
+			<height>616</height>
+			<DeltaPerPixelX unit="µm">64.000000</DeltaPerPixelX>
+			<DeltaPerPixelY unit="µm">64.000000</DeltaPerPixelY>
+		</region>
+	</regions>
+	<probe>
+		<name>L14-5/38</name>
+		<type>2</type>
+		<elements>128</elements>
+		<pitch>300</pitch>
+		<curve>0</curve>
+		<fcentre>9500000</fcentre>
+		<bandwidth>9000000</bandwidth>
+	</probe>
+	<zones offset="0">
+		<zone>
+			<xpos>78</xpos>
+			<ypos>25</ypos>
+			<width>298</width>
+			<height>25</height>
+		</zone>
+		<zone>
+			<xpos>78</xpos>
+			<ypos>0</ypos>
+			<width>298</width>
+			<height>25</height>
+		</zone>
+	</zones>
+	<InstanceID>2.16.124.113577.1.99999999.20161220.120122.820.1</InstanceID>
+	<dicomstoragehistory>
+		<attempt scp="PACS_AUNMOLWFM1_104_10.41.5.13" stored="1" storageattempts="1" laststorageattempt="20161220120126"/>
+		<attempt scp="SECURVIEW_SECURVIEW_DX_104_192.9.211.108" stored="1" storageattempts="1" laststorageattempt="20161220120126"/>
+	</dicomstoragehistory>
+</object>
