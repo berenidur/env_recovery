@@ -1,10 +1,11 @@
 # Homodyned K distribution
-
-- En [seabra2011rf](https://www.notion.so/Papers-17e69531d59f450b8b9a7d35aaa46dcf?pvs=21) **decía que:**
-    - Finally, a study recently presented in [29] compared the compression parameter estimation of the well-established method proposed in [7,8] with the approach described in this chapter, observing that the latter provides better results in terms of parameter estimation accuracy. As pointed out in [29] this could be explained as the decompression method proposed in this chapter is based on the statistics for the compressed signal, while the approach presented in [7,8] uses statistics for the uncompressed signal, and attempts to match theoretically calculated normalized moments with those determined directly from the image. The process of fitting the moments calculated in the image with theoretical moments of the exponential distribution (cf. [8]) is extremely sensitive to the order of the moment n, and this could create uncertainty on the decompression parameter to be estimated.
+- En [seabra2011rf](/papers/seabra2008modeling.pdf) decía que:
+    - Finally, a study recently presented in [29] compared the compression parameter estimation of the well-established method proposed in [7,8](/papers/Homodyned%20K/prager2003decompression.pdf) with the approach described in this chapter, observing that the latter provides better results in terms of parameter estimation accuracy. As pointed out in [29](/papers/Homodyned%20K/paskas2009two.pdf) this could be explained as the decompression method proposed in [this chapter](/papers/seabra2008modeling.pdf) is based on the statistics for the compressed signal, while the approach presented in [7,8](/papers/Homodyned%20K/prager2003decompression.pdf) uses statistics for the uncompressed signal, and attempts to match theoretically calculated normalized moments with those determined directly from the image. **The process of fitting the moments calculated in the image with theoretical moments of the exponential distribution (cf. [8](/papers/Homodyned%20K/prager2003decompression.pdf)) is extremely sensitive to the order of the moment n, and this could create uncertainty on the decompression parameter to be estimated.**
         - [this chapter] [seabra2008modeling](/papers/seabra2008modeling.pdf), [seabra2001rf](/papers/seabra2011rf.pdf)
         - [8] [prager2003decompression](/papers/Homodyned%20K/prager2003decompression.pdf)
         - [29] [paskas2009two](/papers/Homodyned%20K/paskas2009two.pdf)
+        - [Implementación con data sintética](../code/estimacion_seabra_data_generada.html)
+        - [Implementación con data real](../code/estimacion_seabra.html)
 - **Quantitative Ultrasound in Soft Tissues**
     - **1.2.2 Envelope stats techniques**
         - Some of the distributions considered in these models include the Rayleigh, the Rician, the K, the homodyned-K, and the Nakagami distributions; these distri-butions have been described extensively in the literature.
@@ -19,8 +20,16 @@
                 In Prager et al. (2003), a decompression algorithm is proposed, assuming the homodyned K-distribution for the envelope.
                 
                 - [Decompression and speckle detection for ultrasound images using the homodyned k-distribution](/papers/Homodyned%20K/prager2003decompression.pdf)
-                    - Implementando
+                    - [Implementando (sale mal)](../code/estimacion_prager_data_generada.html)
         - [Dutt and Greenleaf 1994 - Ultrasound echo envelope analysis using a homodyned K distribution signal model](/papers/Homodyned%20K/dutt1994ultrasound.pdf)
+            - Probability distribution function of the amplitude of the echo envelope ([used to generate data](../code/hom_k_dist_gen.m)):
+                
+                $p_A(A) = A \int_0^{\infty} x J_0(sx) J_0(Ax) \left( 1 + \frac{x^2 \sigma^2}{2 \mu} \right)^{-\mu} \, dx,$
+
+                where $J_0(\cdot)$ is the zeroth order Bessel function of the first kind, $s^2$ is the coherent signal energy, $\sigma^2$ is the diffuse signal energy, and $\mu$ is the same parameter as defined in the K distribution. The derived parameter $k = \frac{s}{\sigma}$ is the ratio of the coherent to diffuse signal and can be used to describe the level of structure or periodicity in scatterer locations.
+
+        - [Hruska and Oelze 2009 - Improved Parameter Estimates Based on the Homodyned K Distribution](/papers/Homodyned%20K/hruska2009improved.pdf)
+            - Only estimates $\mu$ and $k$.
     - **7. Review of envelope statistics models for quantitative ultrasound imaging and tissue characterization**
         - The main assumptions made are **(1) the absence of log-compression** or application of nonlinear filtering on the echo envelope of the radiofrequency signal and (2) the randomness and independence of the diffuse scatterers.
         - The (two-dimensional) homodyned K-distribution (Jakeman 1980; Jakeman and Tough 1987) is defined by
