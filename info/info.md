@@ -4,8 +4,8 @@
         - [this chapter] [seabra2008modeling](/papers/seabra2008modeling.pdf), [seabra2001rf](/papers/seabra2011rf.pdf)
         - [8] [prager2003decompression](/papers/Homodyned%20K/prager2003decompression.pdf)
         - [29] [paskas2009two](/papers/Homodyned%20K/paskas2009two.pdf)
-        - [Implementación con data sintética](../code/estimacion_seabra_data_generada.html)
-        - [Implementación con data real](../code/estimacion_seabra.html)
+        - [Implementación con data sintética](../code/estimacion_seabra_data_generada.ipynb)
+        - [Implementación con data real](../code/estimacion_seabra_data_real.ipynb)
 - **Quantitative Ultrasound in Soft Tissues**
     - **1.2.2 Envelope stats techniques**
         - Some of the distributions considered in these models include the Rayleigh, the Rician, the K, the homodyned-K, and the Nakagami distributions; these distri-butions have been described extensively in the literature.
@@ -20,7 +20,7 @@
                 In Prager et al. (2003), a decompression algorithm is proposed, assuming the homodyned K-distribution for the envelope.
                 
                 - [Decompression and speckle detection for ultrasound images using the homodyned k-distribution](/papers/Homodyned%20K/prager2003decompression.pdf)
-                    - [Implementando (sale mal)](../code/estimacion_prager_data_generada.html)
+                    - [Implementando (sale mal)](../code/estimacion_prager_data_generada.ipynb)
         - [Dutt and Greenleaf 1994 - Ultrasound echo envelope analysis using a homodyned K distribution signal model](/papers/Homodyned%20K/dutt1994ultrasound.pdf)
             - Probability distribution function of the amplitude of the echo envelope ([used to generate data](../code/hom_k_dist_gen.m)):
                 
