@@ -1,6 +1,7 @@
 % Simulating B-mode Ultrasound Images Example
 
 clearvars; close all; clc;
+addpath('functions/');
 
 inclusiones_dens=false;      % en densidad
 inclusiones_att=false;       % en atenuación
