@@ -1,6 +1,7 @@
 % Simulating B-mode Ultrasound Images Example
 
 clearvars; close all; clc;
+addpath('functions/');
 
 % para guardar el código que se utilizó. Si da error, solo comentar
 puntom=guardarpuntom(mfilename('fullpath'));
