@@ -4,7 +4,7 @@ addpath('../../code/functions/');
 fcell={'breast\','ganglio\'};
 
 windowsize=16;
-const=pi/2/sqrt(6);
+const=2*sqrt(6)/pi;
 
 for k=1:length(fcell)
     f=fcell{k};
@@ -32,7 +32,7 @@ for k=1:length(fcell)
                     roi=s.comp_env_interp(ni:ni+windowsize-1,mi:mi+windowsize-1);
                     stdroi=std(roi(:));
                     s.std_map(ni,mi)=stdroi;
-                    s.err_map(ni,mi)=(stdroi/const-s.a_0)/s.a_0;
+                    s.err_map(ni,mi)=(stdroi*const-s.a_0)/s.a_0;
 
                 end
             end
