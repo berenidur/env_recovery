@@ -8,13 +8,28 @@ import random
 from unets import AttUNet_seg_std
 import scipy.io
 import pickle
+import h5py
 
 std_const=torch.pi/2/np.sqrt(6)
 
-modelname='attunet_std'
+modelname='unet'
+def idx2datapathkey(simu):
+    h5dir='/data/data_'
+    if 1<=simu and simu<=1000:
+        datapath=h5dir+'00001-01000.h5'
+    elif 1001<=simu and simu<=2000:
+        datapath=h5dir+'01001-02000.h5'
+    elif 2001<=simu and simu<=3000:
+        datapath=h5dir+'02001-03000.h5'
+    elif 3001<=simu and simu<=4000:
+        datapath=h5dir+'03001-04000.h5'
+
+    datakey = 'data' + str(simu).zfill(5)
+
+    return datapath, datakey
 
 # Define a dummy dataset
-class PuntomatsDS(Dataset):
+class H5Dataset(Dataset):
     def __init__(self, lstfiles, transform=None):
         self.lstfiles = lstfiles
         self.transform = transform
@@ -23,16 +38,18 @@ class PuntomatsDS(Dataset):
         return len(self.lstfiles)
 
     def __getitem__(self, idx):
-        mat = scipy.io.loadmat(self.lstfiles[idx])
-        comp_env = mat["comp_env"][:1200,:]
-        a_0 = mat["a_0"]
-        b_0 = mat["b_0"]
-        target_std = a_0*std_const
+        datapath, datakey = idx2datapathkey(self.lstfiles[idx])
+        with h5py.File(datapath, 'r') as f:
+            x = np.array(f[datakey]['input'])
+            y = np.array(f[datakey]['target'])
+
+        x/=256
+        y/=256
 
         if self.transform:
-            comp_env = self.transform(comp_env)
-            target_std = self.transform(target_std)
-        return comp_env, std_const
+            x = self.transform(x)
+            y = self.transform(y)
+        return x, y
     
 def to_tensor(image):
     image = torch.tensor(image, dtype=torch.float32)
@@ -47,9 +64,9 @@ test_files  = data_splits['test_files']
 
 transform = to_tensor
 test_files.sort()
-train_dataset = PuntomatsDS(lstfiles=train_files, transform=transform)
-val_dataset = PuntomatsDS(lstfiles=val_files, transform=transform)
-test_dataset = PuntomatsDS(lstfiles=test_files, transform=transform)
+train_dataset = H5Dataset(lstfiles=train_files, transform=transform)
+val_dataset = H5Dataset(lstfiles=val_files, transform=transform)
+test_dataset = H5Dataset(lstfiles=test_files, transform=transform)
 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
