@@ -10,7 +10,7 @@ import time
 from unets import UNet
 from utils import *
 
-modelname = 'unet_v0.1'
+modelname = 'unet_v0.1.1'
 h5_path = '../data/dataoncosalud/res_valid/comp_env_data.h5'
 dataset = 'comp_env_interp_1'
 n = 57 # H,W of each window
@@ -77,7 +77,8 @@ print(device)
 start_epoch = 1
 
 # Loss and optimizer
-criterion = nn.BCEWithLogitsLoss()
+pos_weight = torch.tensor([100.0]).to(device)
+criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # To store losses
@@ -98,7 +99,7 @@ if resume_training:
         print(f"Epoch {i+1} - Train Loss: {history['train_loss'][i]:.4f} - Validation Loss: {history['val_loss'][i]:.4f} - Time: {disp_time(history['epoch_time'][i])}")
 
 # Training and validation loop
-epochs = 20
+epochs = 60
 for epoch in range(start_epoch, start_epoch + epochs):
     start_time = time.time()
     print(f'Epoch {epoch}/{start_epoch + epochs - 1}', end='', flush=True)
