@@ -19,8 +19,8 @@
                 
                 In Prager et al. (2003), a decompression algorithm is proposed, assuming the homodyned K-distribution for the envelope.
                 
-                - [Decompression and speckle detection for ultrasound images using the homodyned k-distribution](/papers/Homodyned%20K/prager2003decompression.pdf)
-                    - [Implementando (sale mal)](../code/estimacion_prager_data_generada.ipynb)
+                - [Decompression and speckle detection for ultrasound images using the homodyned k-distribution (Prager 2003)](/papers/Homodyned%20K/prager2003decompression.pdf)
+                    - [Implementación](../data/dataoncosalud/codigo_comentado.md)
         - [Dutt and Greenleaf 1994 - Ultrasound echo envelope analysis using a homodyned K distribution signal model](/papers/Homodyned%20K/dutt1994ultrasound.pdf)
             - Probability distribution function of the amplitude of the echo envelope ([used to generate data](../code/hom_k_dist_gen.m)):
                 
