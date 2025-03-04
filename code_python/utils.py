@@ -30,17 +30,17 @@ def disp_time(seconds):
         result.append(f"{seconds:.3f} seconds")
     return ", ".join(result)
 
-def plot_losses(history, epoch, modelname):
+def plot_losses(history, epoch, modelname, start_epoch=1):
     plt.figure(figsize=(8, 6))
-    plt.plot(range(1, epoch + 1), history['train_loss'], label='Train Loss')
-    plt.plot(range(1, epoch + 1), history['val_loss'], label='Validation Loss')
+    plt.plot(range(start_epoch, epoch + 1), history['train_loss'][start_epoch - 1:], label='Train Loss')
+    plt.plot(range(start_epoch, epoch + 1), history['val_loss'][start_epoch - 1:], label='Validation Loss')
     plt.grid(True)
-    plt.xlim(1, epoch)
+    plt.xlim(start_epoch, epoch)  # Set x-axis limits
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
-    plt.title(f'Loss after {epoch} epochs')
+    plt.title(f'Loss from epoch {start_epoch} to {epoch}')
     plt.legend()
-    plt.savefig('imgs/'+modelname+'_loss.png')
+    plt.savefig(f'imgs/{modelname}_loss.png')
 
 
 def calculate_total_windows_h5(h5_path, n):
