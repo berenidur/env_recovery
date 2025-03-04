@@ -7,15 +7,25 @@ import pickle
 import os
 import time
 
+from scipy.ndimage import binary_dilation
+
 from unets import UNet
 from utils import *
 
-modelname = 'unet_v0.1.1'
+modelname = 'unet_v0.1.2_imdilation'   # imdilate
 h5_path = '../data/dataoncosalud/res_valid/comp_env_data.h5'
 dataset = 'comp_env_interp_1'
 n = 57 # H,W of each window
 checkpoint_path = f'models/{modelname}_latest.pth'
 resume_training = os.path.exists(checkpoint_path)
+
+l=29
+modelname=f'{modelname}_{l}'
+checkpoint_path = f'models/{modelname}_latest.pth'
+resume_training = os.path.exists(checkpoint_path)
+print(modelname)
+imdilate_structure=np.ones((l,l))
+imdilate_structure_lbl = f'np.ones(({l},{l}))'
 
 # Define a dummy dataset
 class H5Dataset(Dataset):
@@ -37,6 +47,8 @@ class H5Dataset(Dataset):
             x = x[:, ::2]
         # if y.shape[1] == 512:
             y = y[:, ::2]
+
+        y = binary_dilation(y,structure=imdilate_structure).astype(y.dtype)
 
         x = np.expand_dims(x, axis=0)
         y = np.expand_dims(y, axis=0)
@@ -77,15 +89,17 @@ print(device)
 start_epoch = 1
 
 # Loss and optimizer
-pos_weight = torch.tensor([100.0]).to(device)
-criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+criterion = nn.BCEWithLogitsLoss()
+# pos_weight = torch.tensor([100.0]).to(device)
+# criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # To store losses
 history = {
     "train_loss": [],
     "val_loss": [],
-    "epoch_time": []
+    "epoch_time": [],
+    "imdilate_structure": imdilate_structure_lbl
 }
 
 if resume_training:
@@ -99,7 +113,7 @@ if resume_training:
         print(f"Epoch {i+1} - Train Loss: {history['train_loss'][i]:.4f} - Validation Loss: {history['val_loss'][i]:.4f} - Time: {disp_time(history['epoch_time'][i])}")
 
 # Training and validation loop
-epochs = 60
+epochs = 30
 for epoch in range(start_epoch, start_epoch + epochs):
     start_time = time.time()
     print(f'Epoch {epoch}/{start_epoch + epochs - 1}', end='', flush=True)

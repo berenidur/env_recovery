@@ -3,10 +3,12 @@ import numpy as np
 import pickle
 import os
 
+from scipy.ndimage import binary_dilation
+
 from unets import UNet
 from utils import *
 
-modelname = 'unet_v0.1'
+modelname = 'unet_v0.1.2_imdilation'
 h5_path = '../data/dataoncosalud/res_valid/comp_env_data.h5'
 dataset = 'comp_env_interp_1'
 n = 57  # H,W of each window
@@ -20,6 +22,8 @@ with open('data_splits.pkl', 'rb') as f:
 test_files = data_splits['test_files']
 test_files.sort()
 Q1 = data_splits['Q1']
+
+imdilate_structure=np.ones((n,n))
 
 # Define dataset class
 class H5Dataset(torch.utils.data.Dataset):
@@ -40,6 +44,8 @@ class H5Dataset(torch.utils.data.Dataset):
         if x.shape[1] == 512:
             x = x[:, ::2]
             y = y[:, ::2]
+
+        y = binary_dilation(y,structure=imdilate_structure).astype(y.dtype)
 
         x = np.expand_dims(x, axis=0)
         y = np.expand_dims(y, axis=0)
@@ -62,7 +68,7 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=32, shuffle=F
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Loop through saved models at epochs 5, 10, ..., 60
-for epoch in range(5, 65, 5):
+for epoch in range(25, 26, 5):
     checkpoint_path = f'models/{modelname}_epoch_{epoch}.pth'
 
     if not os.path.exists(checkpoint_path):
