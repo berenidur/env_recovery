@@ -7,30 +7,29 @@ import pickle
 import os
 import time
 
-from cnn_model import CNNModel
+import cnn_model
 from utils import *
 
 # Model parameters
-modelname = 'cnn_v0.1'
+modelname = 'cnn_breast_v0.2'
 checkpath(f'models/{modelname}/')
-h5_path = '../data/dataoncosalud/res_valid/comp_env_data.h5'
-dataset = 'comp_env_interp_1'
+# h5_path = '../data/dataoncosalud/res_valid/comp_env_data.h5'
+# dataset = 'comp_env_interp_1'
 n = 57  # Height, Width of each window
 checkpoint_path = f'models/{modelname}/latest.pth'
 resume_training = os.path.exists(checkpoint_path)
 
 class H5Dataset_windows(Dataset):
-    def __init__(self, x, y, transform=None):
-        self.x = x
-        self.y = y
+    def __init__(self, windows, transform=None):
+        self.windows = windows
         self.transform = transform
 
     def __len__(self):
-        return len(self.x)
+        return len(self.windows)
 
     def __getitem__(self, idx):
-        x = self.x[idx]
-        y = self.y[idx]
+        x = self.windows[idx].comp_env_window
+        y = self.windows[idx].validRS
 
         x = np.expand_dims(x, axis=0)  # Add channel dimension
         y = np.expand_dims(y, axis=0)  # For consistency
@@ -45,14 +44,14 @@ def to_tensor(image):
     return torch.tensor(image, dtype=torch.float32)
 
 # Load dataset splits
-with open('data_arrays_CNN.pkl', 'rb') as f:
+with open('breast_data_arrays_CNN.pkl', 'rb') as f:
     data_splits = pickle.load(f)
 
-train_files_x, train_files_y  = data_splits['train_comp_env_windows'], data_splits['train_validRS_values']
-val_files_x, val_files_y = data_splits['val_comp_env_windows'], data_splits['val_validRS_values']
+train_files  = data_splits['train_windows']
+val_files = data_splits['val_windows']
 
-train_dataset = H5Dataset_windows(train_files_x, train_files_y, transform=to_tensor)
-val_dataset = H5Dataset_windows(val_files_x, val_files_y, transform=to_tensor)
+train_dataset = H5Dataset_windows(train_files, transform=to_tensor)
+val_dataset = H5Dataset_windows(val_files, transform=to_tensor)
 
 batch_size = 4096
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -61,12 +60,13 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 
 # Initialize Model, Loss & Optimizer
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = CNNModel().to(device)
+ModelClass = getattr(cnn_model, modelname.replace(".", "_"))  # Get the class
+model = ModelClass().to(device)  # Instantiate and move to device
 print(f"Using device: {device}")
 
 # Loss function and optimizer
 criterion = nn.BCEWithLogitsLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.0005)
 
 # History tracking
 history = {
@@ -87,7 +87,7 @@ if resume_training:
 
 
 # Training & Validation Loop
-epochs = 10
+epochs = 50
 for epoch in range(start_epoch, start_epoch + epochs):
     start_time = time.time()
     print(f'Epoch {epoch}/{start_epoch + epochs - 1}', end='', flush=True)
@@ -137,7 +137,7 @@ for epoch in range(start_epoch, start_epoch + epochs):
 
     # Save checkpoint every 5 epochs
     if epoch % 5 == 0:
-        plot_losses(history, epoch, modelname, start_epoch=20)
+        plot_losses(history, epoch, modelname, start_epoch=10)
         torch.save({
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
