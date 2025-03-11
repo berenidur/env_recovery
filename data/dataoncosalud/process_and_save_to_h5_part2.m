@@ -1,10 +1,10 @@
 close all; clear; clc;
 addpath('../../code/functions/');
 
-load('res_valid/processed_classification_results.mat');
+load('res_valid/breast_processed_classification_results.mat');
 
 tot = length(results);
-h5_filename = 'res_valid/comp_env_data.h5';
+h5_filename = 'res_valid/breast_comp_env_data.h5';
 
 % Create an empty HDF5 file if it doesn't exist
 if ~isfile(h5_filename)

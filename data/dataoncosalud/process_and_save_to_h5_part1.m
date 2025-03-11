@@ -3,6 +3,9 @@ addpath('../../code/functions/');
 
 load('res_valid\classification_only.mat');
 
+matches = contains(accepted_files, 'breast', 'IgnoreCase', true);
+accepted_files=accepted_files(matches);
+
 tot=length(accepted_files);
 results = struct();
 
@@ -88,4 +91,4 @@ parfor_progress;
 end
 parfor_progress(0);
 
-save('res_valid\processed_classification_results.mat', 'results');
+save('res_valid\breast_processed_classification_results.mat', 'results');
