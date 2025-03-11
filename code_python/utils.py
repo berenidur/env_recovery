@@ -59,6 +59,19 @@ def calculate_total_windows_h5(h5_path, n):
                 raise ValueError(f"Dataset {dataset_name} not found")
     return total_windows
 
+class DataWindow():
+    def __init__(self, comp_env_window, R, S, beta, k, validRS, a_0):
+        self.comp_env_window = comp_env_window
+        self.R = R
+        self.S = S
+        self.beta = beta
+        self.k = k
+        self.validRS = validRS
+        self.a_0 = a_0
+    
+    def __str__(self):
+        return f"window: {self.comp_env_window}\nR: {self.R}\nS: {self.S}\nbeta: {self.beta}\nk: {self.k}\nvalidRS: {self.validRS}\na_0: {self.a_0}"
+
 def get_window_xy_h5(h5_path, n, window_idx):
     total_windows = calculate_total_windows_h5(h5_path, n)
     if window_idx >= total_windows:
@@ -68,8 +81,13 @@ def get_window_xy_h5(h5_path, n, window_idx):
     with h5py.File(h5_path, 'r') as file:
         for group in file.keys():
             dataset_name = f'{group}/comp_env_interp_1'
-            valid_rs_name = f'{group}/validRS'
-            if dataset_name in file and valid_rs_name in file:
+            R_matrix_name = f'{group}/R_matrix'
+            S_matrix_name = f'{group}/S_matrix'
+            a_0_name = f'{group}/a_0'
+            beta_matrix_name = f'{group}/beta_matrix'
+            k_matrix_name = f'{group}/k_matrix'
+            validRS_name = f'{group}/validRS'
+            if dataset_name in file and validRS_name in file:
                 data = np.array(file[dataset_name])
                 if data.ndim == 2:
                     num_windows = ((data.shape[0] - n + 1) * (data.shape[1] - n + 1))
@@ -78,14 +96,29 @@ def get_window_xy_h5(h5_path, n, window_idx):
                         row_idx = local_idx // (data.shape[1] - n + 1)
                         col_idx = local_idx % (data.shape[1] - n + 1)
                         comp_env_window = data[row_idx:row_idx+n, col_idx:col_idx+n]
-                        
-                        valid_rs = np.array(file[valid_rs_name])
-                        valid_rs_value = valid_rs[row_idx, col_idx]
 
-                        return comp_env_window, valid_rs_value
+                        R = np.array(file[R_matrix_name])
+                        R_value = R[row_idx, col_idx]
+
+                        S = np.array(file[S_matrix_name])
+                        S_value = S[row_idx, col_idx]
+
+                        beta = np.array(file[beta_matrix_name])
+                        beta_value = beta[row_idx, col_idx]
+
+                        k = np.array(file[k_matrix_name])
+                        k_value = k[row_idx, col_idx]
+
+                        a_0 = np.array(file[a_0_name])
+                        a_value = a_0[row_idx, col_idx]
+
+                        validRS = np.array(file[validRS_name])
+                        validRS_value = validRS[row_idx, col_idx]
+
+                        return DataWindow(comp_env_window, R_value, S_value, beta_value, k_value, validRS_value, a_value)
                     current_window += num_windows
                 else:
                     raise ValueError(f"Dataset {dataset_name} is not 2-dimensional")
             else:
-                raise ValueError(f"Dataset {dataset_name} or {valid_rs_name} not found")
+                raise ValueError(f"Dataset {dataset_name} or {validRS_name} not found")
     raise IndexError("Window index out of range")
