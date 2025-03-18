@@ -11,7 +11,7 @@ import model_autoencoders
 from utils import *
 
 # Model parameters
-modelname = 'autoencoder_breast_v0.1'
+modelname = 'autoencoder_breast_v0.2'
 checkpath(f'models/{modelname}/')
 # h5_path = '../data/dataoncosalud/res_valid/comp_env_data.h5'
 # dataset = 'comp_env_interp_1'
@@ -35,9 +35,11 @@ class H5Dataset_windows(Dataset):
 
         y_R = self.windows[idx].R
         y_S = self.windows[idx].S
+        y_beta = self.windows[idx].beta
+        y_k = self.windows[idx].k
 
         x = np.array([x_R, x_S], dtype=np.float32)
-        y = np.array([y_R, y_S], dtype=np.float32)
+        y = np.array([y_R, y_S, y_beta, y_k], dtype=np.float32)
 
         x = np.expand_dims(x, axis=0)  # Add channel dimension
         y = np.expand_dims(y, axis=0)  # For consistency
@@ -52,7 +54,7 @@ def to_tensor(image):
     return torch.tensor(image, dtype=torch.float32)
 
 # Load dataset splits
-with open('breast_data_arrays_CNN.pkl', 'rb') as f:
+with open('breast_noNaN_data_arrays_CNN.pkl', 'rb') as f:
     data_splits = pickle.load(f)
 
 train_files  = data_splits['train_windows']
@@ -95,7 +97,7 @@ if resume_training:
 
 
 # Training & Validation Loop
-epochs = 300
+epochs = 600
 for epoch in range(start_epoch, start_epoch + epochs):
     start_time = time.time()
     print(f'Epoch {epoch}/{start_epoch + epochs - 1}', end='', flush=True)

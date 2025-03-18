@@ -7,8 +7,10 @@ import model_autoencoders
 from utils import *
 
 # Model parameters
-modelname = 'autoencoder_breast_v0.1'
-checkpoint_path = f'models/{modelname}/latest.pth'
+v=0.2
+modelname = f'autoencoder_breast_v{v}'
+epoch = 1200
+checkpoint_path = f'models/{modelname}/epoch_{epoch}.pth'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load dataset
@@ -32,12 +34,16 @@ class H5Dataset_windows(torch.utils.data.Dataset):
         
         y_R = self.windows[idx].R
         y_S = self.windows[idx].S
-        # y_beta = self.windows[idx].beta
-        # y_k = self.windows[idx].k
+        if v==0.2:
+            y_beta = self.windows[idx].beta
+            y_k = self.windows[idx].k
         
         x = np.array([x_R, x_S], dtype=np.float32)
-        y = np.array([y_R, y_S], dtype=np.float32)
-        # y = np.array([y_R, y_S, y_beta, y_k], dtype=np.float32)
+        if v==0.1:
+            y = np.array([y_R, y_S], dtype=np.float32)
+        elif v==0.2:
+            y = np.array([y_R, y_S, y_beta, y_k], dtype=np.float32)
+            validRS=self.windows[idx].validRS
         
         x = np.expand_dims(x, axis=0)  # Add channel dimension
         y = np.expand_dims(y, axis=0)  # For consistency
@@ -45,8 +51,11 @@ class H5Dataset_windows(torch.utils.data.Dataset):
         if self.transform:
             x = self.transform(x)
             y = self.transform(y)
-        
-        return x, y
+
+        if v==0.1:
+            return x, y
+        if v==0.2:
+            return x, y, validRS
 
 def to_tensor(image):
     return torch.tensor(image, dtype=torch.float32)
@@ -61,24 +70,30 @@ model = ModelClass().to(device)
 if os.path.exists(checkpoint_path):
     checkpoint = torch.load(checkpoint_path)
     model.load_state_dict(checkpoint['model_state_dict'])
-    print("Model checkpoint loaded.")
+    print(f"Model epoch {epoch} loaded.")
 else:
-    raise FileNotFoundError("Checkpoint not found! Make sure the model is trained and saved.")
+    raise FileNotFoundError(f"Epoch {epoch} not found!")
 
 model.eval()
 predictions = []
 actuals = []
+actual_validRS = []
 
 with torch.no_grad():
-    for inputs, targets in val_loader:
+    for inputs, targets, validRS in val_loader:
         inputs, targets = inputs.to(device), targets.to(device)
         outputs = model(inputs)
         predictions.append(outputs.cpu().numpy())
         actuals.append(targets.cpu().numpy())
+        actual_validRS.append(validRS.cpu().numpy())
 
 # Convert to arrays
-predictions = np.concatenate(predictions, axis=0)
-actuals = np.concatenate(actuals, axis=0)
+predictions = np.squeeze(predictions)
+actuals = np.squeeze(actuals)
+actual_validRS=np.squeeze(actual_validRS)
+if v==0.2:
+    actuals=np.hstack((actuals,actual_validRS[:,None]))
+
 
 # Save results
 np.save(f'models/{modelname}/validation_predictions.npy', predictions)
