@@ -41,6 +41,7 @@ def plot_losses(history, epoch, modelname, start_epoch=1):
     plt.title(f'Loss from epoch {start_epoch} to {epoch}')
     plt.legend()
     plt.savefig(f'imgs/{modelname}_loss.png')
+    plt.close()
 
 
 def calculate_total_windows_h5(h5_path, n):
