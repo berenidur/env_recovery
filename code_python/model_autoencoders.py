@@ -65,3 +65,42 @@ class autoencoder_breast_v0_2(nn.Module):
         x = self.dec3(x)  # No activation on last layer
         
         return x
+
+class autoencoder_breast_v0_3(nn.Module):
+    def __init__(self, b1=4, b2=4):  # Two latent spaces
+        super(autoencoder_breast_v0_3, self).__init__()
+        
+        # Encoder
+        self.enc1 = nn.Linear(2, 32)
+        self.enc2 = nn.Linear(32, 32)
+        
+        # Two separate latent spaces
+        self.enc3_1 = nn.Linear(32, b1)
+        self.enc3_2 = nn.Linear(32, b2)
+        
+        # Decoder
+        self.dec1 = nn.Linear(b1 + b2, 32)  # Merge both latent spaces
+        self.dec2 = nn.Linear(32, 32)
+        self.dec3 = nn.Linear(32, 4)
+        
+        # Dropout
+        self.dropout = nn.Dropout(0.2)
+        
+    def forward(self, x):
+        # Encoding
+        x = F.leaky_relu(self.enc1(x))
+        x = self.dropout(F.leaky_relu(self.enc2(x)))  # Dropout on second encoder layer
+        
+        # Two separate latent spaces
+        z1 = F.leaky_relu(self.enc3_1(x))
+        z2 = F.leaky_relu(self.enc3_2(x))
+        
+        # Merge latent spaces
+        z = torch.cat((z1, z2), dim=2)
+        
+        # Decoding
+        x = F.leaky_relu(self.dec1(z))
+        x = F.leaky_relu(self.dec2(x))
+        x = self.dec3(x)  # No activation on last layer
+        
+        return x

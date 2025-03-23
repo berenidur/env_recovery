@@ -11,7 +11,7 @@ import model_autoencoders
 from utils import *
 
 # Model parameters
-modelname = 'autoencoder_breast_v0.2'
+modelname = 'autoencoder_breast_v0.3'
 checkpath(f'models/{modelname}/')
 # h5_path = '../data/dataoncosalud/res_valid/comp_env_data.h5'
 # dataset = 'comp_env_interp_1'

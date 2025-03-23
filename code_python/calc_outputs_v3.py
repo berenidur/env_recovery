@@ -7,9 +7,9 @@ import model_autoencoders
 from utils import *
 
 # Model parameters
-v=0.2
+v=0.3
 modelname = f'autoencoder_breast_v{v}'
-epoch = 1200
+epoch = 800
 checkpoint_path = f'models/{modelname}/epoch_{epoch}.pth'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -34,14 +34,14 @@ class H5Dataset_windows(torch.utils.data.Dataset):
         
         y_R = self.windows[idx].R
         y_S = self.windows[idx].S
-        if v==0.2:
+        if v>=0.2:
             y_beta = self.windows[idx].beta
             y_k = self.windows[idx].k
         
         x = np.array([x_R, x_S], dtype=np.float32)
         if v==0.1:
             y = np.array([y_R, y_S], dtype=np.float32)
-        elif v==0.2:
+        elif v>=0.2:
             y = np.array([y_R, y_S, y_beta, y_k], dtype=np.float32)
             validRS=self.windows[idx].validRS
         
@@ -54,7 +54,7 @@ class H5Dataset_windows(torch.utils.data.Dataset):
 
         if v==0.1:
             return x, y
-        if v==0.2:
+        if v>=0.2:
             return x, y, validRS
 
 def to_tensor(image):
@@ -91,7 +91,7 @@ with torch.no_grad():
 predictions = np.squeeze(predictions)
 actuals = np.squeeze(actuals)
 actual_validRS=np.squeeze(actual_validRS)
-if v==0.2:
+if v>=0.2:
     actuals=np.hstack((actuals,actual_validRS[:,None]))
 
 
