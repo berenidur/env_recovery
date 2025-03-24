@@ -11,7 +11,7 @@ import custom_models
 from utils import *
 
 # Model parameters
-v=0.1
+v=0.2
 modelname = f'customnetwork_v{v}'
 datasetname = f'H5Dataset_windows_custom_v{v}'
 checkpath(f'models/{modelname}/')
@@ -57,7 +57,7 @@ history = {
 }
 
 # Load checkpoint if resuming training
-start_epoch = 280
+start_epoch = 1
 if resume_training:
     checkpoint = torch.load(checkpoint_path)
     model.load_state_dict(checkpoint['model_state_dict'])
@@ -68,7 +68,7 @@ if resume_training:
 
 
 # Training & Validation Loop
-epochs = 1
+epochs = 100
 for epoch in range(start_epoch, start_epoch + epochs):
     start_time = time.time()
     print(f'Epoch {epoch}/{start_epoch + epochs - 1}', end='', flush=True)
@@ -77,14 +77,13 @@ for epoch in range(start_epoch, start_epoch + epochs):
     model.train()
     train_loss = 0
 
-    for inputs, targets in train_loader:
+    for inputs, a0, targets in train_loader:
         inputs, targets = inputs.to(device), targets.to(device)
+        a0 = a0.to(device).requires_grad_()
 
         optimizer.zero_grad()
-        predicted_a0, outputs = model(inputs)
-        loss_latent = criterion(predicted_a0[:,0], targets[:, 0])
-        loss_output = criterion(outputs, targets[:, 1:])
-        loss = loss_latent/100 + loss_output
+        outputs = model(inputs, a0)
+        loss = criterion(outputs, targets)
         loss.backward()
         optimizer.step()
 
@@ -97,12 +96,15 @@ for epoch in range(start_epoch, start_epoch + epochs):
     model.eval()
     val_loss = 0
     with torch.no_grad():
-        for inputs, targets in val_loader:
+        for inputs, a0, targets in val_loader:
             inputs, targets = inputs.to(device), targets.to(device)
-            predicted_a0, outputs = model(inputs)
-            loss_latent = criterion(predicted_a0[:,0], targets[:, 0])  
-            loss_output = criterion(outputs, targets[:, 1:])
-            loss = loss_latent/100 + loss_output
+            a0 = a0.to(device)
+
+            optimizer.zero_grad()
+            outputs = model(inputs, a0)
+            loss = criterion(outputs, targets)
+            loss.backward()
+            optimizer.step()
             val_loss += loss.item()
 
     val_loss /= len(val_loader)
