@@ -1,6 +1,35 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.utils.data import Dataset
+import numpy as np
+
+
+class H5Dataset_windows_custom_v0_1(Dataset):
+    def __init__(self, windows, transform=None):
+        self.windows = windows
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.windows)
+
+    def __getitem__(self, idx):
+        x = self.windows[idx].comp_env_window
+        # x = np.array(comp_env_window, dtype=np.float32)
+
+        y_a0 = self.windows[idx].a_0
+        y_R = self.windows[idx].R
+        y_S = self.windows[idx].S
+
+        y = np.array([y_a0, y_R, y_S], dtype=np.float32)
+
+        # x = np.expand_dims(x, axis=0)  # Add channel dimension
+        # y = np.expand_dims(y, axis=0)  # For consistency
+
+        if self.transform:
+            x = self.transform(x)
+            y = self.transform(y)
+        return x, y
 
 # Define the deeper network
 class customnetwork_v0_1(nn.Module):

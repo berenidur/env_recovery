@@ -13,36 +13,11 @@ from utils import *
 # Model parameters
 v=0.1
 modelname = f'customnetwork_v{v}'
+datasetname = f'H5Dataset_windows_custom_v{v}'
 checkpath(f'models/{modelname}/')
 n = 57  # Height, Width of each window
 checkpoint_path = f'models/{modelname}/latest.pth'
 resume_training = os.path.exists(checkpoint_path)
-
-class H5Dataset_windows_custom(Dataset):
-    def __init__(self, windows, transform=None):
-        self.windows = windows
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.windows)
-
-    def __getitem__(self, idx):
-        x = self.windows[idx].comp_env_window
-        # x = np.array(comp_env_window, dtype=np.float32)
-
-        y_a0 = self.windows[idx].a_0
-        y_R = self.windows[idx].R
-        y_S = self.windows[idx].S
-
-        y = np.array([y_a0, y_R, y_S], dtype=np.float32)
-
-        # x = np.expand_dims(x, axis=0)  # Add channel dimension
-        # y = np.expand_dims(y, axis=0)  # For consistency
-
-        if self.transform:
-            x = self.transform(x)
-            y = self.transform(y)
-        return x, y
 
 
 def to_tensor(image):
@@ -55,8 +30,9 @@ with open('breast_noNaN_data_arrays_CNN.pkl', 'rb') as f:
 train_files  = data_splits['train_windows']
 val_files = data_splits['val_windows']
 
-train_dataset = H5Dataset_windows_custom(train_files, transform=to_tensor)
-val_dataset = H5Dataset_windows_custom(val_files, transform=to_tensor)
+datasetClass = getattr(custom_models, datasetname.replace(".", "_"))  # Get the class
+train_dataset = datasetClass(train_files, transform=to_tensor)
+val_dataset = datasetClass(val_files, transform=to_tensor)
 
 batch_size = 131072
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -81,7 +57,7 @@ history = {
 }
 
 # Load checkpoint if resuming training
-start_epoch = 1
+start_epoch = 280
 if resume_training:
     checkpoint = torch.load(checkpoint_path)
     model.load_state_dict(checkpoint['model_state_dict'])
@@ -92,7 +68,7 @@ if resume_training:
 
 
 # Training & Validation Loop
-epochs = 280
+epochs = 1
 for epoch in range(start_epoch, start_epoch + epochs):
     start_time = time.time()
     print(f'Epoch {epoch}/{start_epoch + epochs - 1}', end='', flush=True)

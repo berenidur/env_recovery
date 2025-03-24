@@ -10,6 +10,7 @@ from utils import *
 # Model parameters
 v=0.1
 modelname = f'customnetwork_v{v}'
+datasetname = f'H5Dataset_windows_custom_v{v}'
 epoch = 800
 checkpoint_path = f'models/{modelname}/{"latest" if epoch==0 else f"epoch_{epoch}"}.pth'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -20,36 +21,11 @@ with open('breast_noNaN_data_arrays_CNN.pkl', 'rb') as f:
 
 val_files = data_splits['val_windows'][:20]
 
-class H5Dataset_windows_custom(Dataset):
-    def __init__(self, windows, transform=None):
-        self.windows = windows
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.windows)
-
-    def __getitem__(self, idx):
-        x = self.windows[idx].comp_env_window
-        # x = np.array(comp_env_window, dtype=np.float32)
-
-        y_a0 = self.windows[idx].a_0
-        y_R = self.windows[idx].R
-        y_S = self.windows[idx].S
-
-        y = np.array([y_a0, y_R, y_S], dtype=np.float32)
-
-        # x = np.expand_dims(x, axis=0)  # Add channel dimension
-        # y = np.expand_dims(y, axis=0)  # For consistency
-
-        if self.transform:
-            x = self.transform(x)
-            y = self.transform(y)
-        return x, y
-
 def to_tensor(image):
     return torch.tensor(image, dtype=torch.float32)
 
-val_dataset = H5Dataset_windows_custom(val_files, transform=to_tensor)
+datasetClass = getattr(custom_models, datasetname.replace(".", "_"))  # Get the class
+val_dataset = datasetClass(val_files, transform=to_tensor)
 val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=4096, shuffle=False)
 
 # Load model
