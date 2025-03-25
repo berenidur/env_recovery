@@ -11,7 +11,7 @@ import custom_models
 from utils import *
 
 # Model parameters
-v=0.2
+v=0.3
 modelname = f'customnetwork_v{v}'
 datasetname = f'H5Dataset_windows_custom_v{v}'
 checkpath(f'models/{modelname}/')
@@ -34,7 +34,7 @@ datasetClass = getattr(custom_models, datasetname.replace(".", "_"))  # Get the 
 train_dataset = datasetClass(train_files, transform=to_tensor)
 val_dataset = datasetClass(val_files, transform=to_tensor)
 
-batch_size = 131072
+batch_size = 8192
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 
@@ -68,7 +68,7 @@ if resume_training:
 
 
 # Training & Validation Loop
-epochs = 100
+epochs = 300
 for epoch in range(start_epoch, start_epoch + epochs):
     start_time = time.time()
     print(f'Epoch {epoch}/{start_epoch + epochs - 1}', end='', flush=True)
@@ -77,13 +77,14 @@ for epoch in range(start_epoch, start_epoch + epochs):
     model.train()
     train_loss = 0
 
-    for inputs, a0, targets in train_loader:
+    for inputs, targets in train_loader:
         inputs, targets = inputs.to(device), targets.to(device)
-        a0 = a0.to(device).requires_grad_()
 
         optimizer.zero_grad()
-        outputs = model(inputs, a0)
-        loss = criterion(outputs, targets)
+        predicted_a0, outputs = model(inputs)
+        loss_latent = criterion(predicted_a0[:,0], targets[:, 0])
+        loss_output = criterion(outputs, targets[:, 1:])
+        loss = loss_latent/100 + loss_output
         loss.backward()
         optimizer.step()
 
@@ -96,15 +97,12 @@ for epoch in range(start_epoch, start_epoch + epochs):
     model.eval()
     val_loss = 0
     with torch.no_grad():
-        for inputs, a0, targets in val_loader:
+        for inputs, targets in val_loader:
             inputs, targets = inputs.to(device), targets.to(device)
-            a0 = a0.to(device)
-
-            optimizer.zero_grad()
-            outputs = model(inputs, a0)
-            loss = criterion(outputs, targets)
-            loss.backward()
-            optimizer.step()
+            predicted_a0, outputs = model(inputs)
+            loss_latent = criterion(predicted_a0[:,0], targets[:, 0])  
+            loss_output = criterion(outputs, targets[:, 1:])
+            loss = loss_latent/100 + loss_output
             val_loss += loss.item()
 
     val_loss /= len(val_loader)
